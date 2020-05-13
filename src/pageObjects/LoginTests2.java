@@ -3,6 +3,7 @@ package pageObjects;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.BeforeEach;
 import org.openqa.selenium.firefox.FirefoxDriver;
+import pages.AuthPage;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -22,37 +23,25 @@ public class LoginTests2
     public void loginTests2_testLoginSucceed_void() throws InterruptedException
     {
         // Happy Path test - login succeeds
-        // Perform Actions with locators
-        LoginPage.userName(this.driver).sendKeys("registeredUser");
-        LoginPage.password(this.driver).sendKeys("1234");
-        LoginPage.submit(driver).click();
-        Thread.sleep(5000);
-        String message = LoginPage.message(driver).getText();
+        AuthPage authPage = new AuthPage(driver);
         String expectedMessage = "Welcome back,\n" + "registeredUser";
-        assertEquals(message, expectedMessage);
+        authPage.authenticate("registeredUser", "1234")
+                .verifyLogin(expectedMessage);
+        Thread.sleep(5000);
         this.driver.quit();
     }
 
     @Test
     public void loginTest2_testLoginFail_void() throws InterruptedException {
         // Sad Path Test - login fails
-        // Locate web elements
-        LoginPage.userName(this.driver).sendKeys("otherUser");
-        LoginPage.password(this.driver).sendKeys(" qwerty1234");
-        LoginPage.submit(driver).click();
-        Thread.sleep(5000);
-        String message = LoginPage.message(driver).getText();
-        System.out.println(message);
-        String expectedMessage = "Account not found. Please sign up by clicking the link below";
-        assertEquals(expectedMessage, message);
+        AuthPage authPage = new AuthPage(driver);
 
-        // Create acct
-        LoginPage.createAcctLink(driver).click();
-        Thread.sleep(5000);
-        String header = CreateAcctPage.header(driver).getText();
-        System.out.println(header);
+        String expectedMessage = "Account not found. Please sign up by clicking the link below";
         String expectedHeader = "Create an Account";
-        assertEquals(expectedHeader, header);
+        authPage.authenticate("otherUser", "qwerty1234")
+                .verifyLogin(expectedMessage)
+                .clickCreateAccount()
+                .verifySignupPage(expectedHeader);
         this.driver.quit();
     }
 }
